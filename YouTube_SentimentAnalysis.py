@@ -13,13 +13,15 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from textblob import TextBlob  # Sentiment Analysis
+import streamlit as st
+import matplotlib.pyplot as plt
 import re  # String Operations
 
 DEVELOPER_KEY = "AIzaSyCI_dU6TZ_XBKSjeovcZrWMgIHW7FuuclY"
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 videoIds = []
-
+# st.set_option('deprecation.showPyplotGlobalUse', False)
 
 def sentiment(polarity):
     if polarity < 0:
@@ -32,16 +34,18 @@ def sentiment(polarity):
 
 
 def scrape_comments(youtube_video_url, Movie_name):
+    # st.title("Youtube")
     chrome_path = Service("D:\chromedriver.exe")
 
     driver = webdriver.Chrome(service=chrome_path)
     driver.get(youtube_video_url)
     driver.maximize_window()
-    driver.implicitly_wait(65)
+    driver.implicitly_wait(30)
 
     # Scrolling to load comments
-    driver.execute_script('window.scrollTo(0,700);')
-    time.sleep(50)
+    time.sleep(20)
+    driver.execute_script('window.scrollTo(0,750);')
+    time.sleep(10)
     print("scrolled")
     sort = driver.find_element(by=By.XPATH, value=
         """//*[@id="icon-label"]""")  # Sorting by top comments
@@ -57,10 +61,10 @@ def scrape_comments(youtube_video_url, Movie_name):
         time.sleep(10)
     totalcomments = len(driver.find_elements(by=By.XPATH, value=
         """//*[@id="content-text"]"""))
-    if totalcomments < 20:
+    if totalcomments < 40:
         index = totalcomments
     else:
-        index = 20
+        index = 40
     ccount = 0
     comments = []
     while ccount < index:
@@ -94,7 +98,15 @@ def scrape_comments(youtube_video_url, Movie_name):
     df1.columns = ['comment', 'polarity', 'sentiment_type', 'subjectivity']
     df1.to_csv(r"E:/FrAgnel/Sem 6/Sentiment Analysis/comment_sentiment_" + Movie_name + ".csv", header=True,
                encoding='utf-8', index=False)
+    
 
+
+# def viualizaiton():
+#     title_type = df.groupby('sentiment').agg('count')
+#     print(title_type)
+#     piechart=df.sentiment.value_counts().plot(kind='pie',autopct="%1.0f%%")
+#     st.write(piechart)
+#     st.pyplot()
 
 def youtube_video_url(options):
     youtube = build(YOUTUBE_API_SERVICE_NAME,
@@ -112,11 +124,11 @@ def youtube_video_url(options):
 
 
 if __name__ == "__main__":
-    print("Enter the movie name: ")
+    print("Enter the video name: ")
     Movie_name = str(input())
     parser = argparse.ArgumentParser(description='youtube search')
     parser.add_argument("--q", help="Search term",
-                        default=Movie_name+"Movie Trailer 2020")
+                        default=Movie_name)
     parser.add_argument("--max-results", help="Max results", default=1)
     args = parser.parse_args()
     youtube_video_url = youtube_video_url(args)
