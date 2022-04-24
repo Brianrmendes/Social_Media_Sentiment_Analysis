@@ -1,10 +1,12 @@
-# Used to search in YT & get the url
-from googleapiclient.discovery import build
+import pickle
+from googleapiclient.discovery import build # Used to search in YT & get the url
 import argparse
+import numpy as np
 import unidecode
 import time
 import os
 import pandas as pd
+import tweepy as tw
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,10 +14,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-from textblob import TextBlob  # Sentiment Analysis
+from textblob import TextBlob  
 import streamlit as st
 import matplotlib.pyplot as plt
-import re  # String Operations
 
 DEVELOPER_KEY = "AIzaSyCI_dU6TZ_XBKSjeovcZrWMgIHW7FuuclY"
 YOUTUBE_API_SERVICE_NAME = "youtube"
@@ -32,6 +33,17 @@ def sentiment(polarity):
         p = "Neutral"
     return p
 
+model=pickle.load(open('model.pkl','rb'))
+def clasifier(text):
+    input=np.array([[text]]).astype(np.float64)
+    prediction=model.predict(input)
+    pred='{0:.{1}f}'.format(prediction[0][0], 2)
+    com = comments(list)
+    com_list = [i.text for i in com]
+    p = [i for i in clasifier(com_list)]
+    q=[p[i]['label'] for i in range(len(p))]
+    r=[p[i]['score'] for i in range(len(p))]
+    return (pred) 
 
 def scrape_comments(youtube_video_url, Movie_name):
     # st.title("Youtube")
